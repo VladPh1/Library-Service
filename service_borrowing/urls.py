@@ -5,7 +5,7 @@ from service_borrowing.views import BorrowingViewSet
 
 
 router = routers.DefaultRouter()
-router.register("books", BorrowingViewSet)
+router.register("borrows", BorrowingViewSet)
 
 urlpatterns = [path("", include(router.urls))]
 
