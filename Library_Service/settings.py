@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "service_book",
     "user",
+    "service_borrowing",
 ]
 
 MIDDLEWARE = [
