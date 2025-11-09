@@ -21,3 +21,4 @@ PyJWT==2.10.1
 pytokens==0.3.0
 sqlparse==0.5.3
 yarl==1.22.0
+stripe~=13.2.0
