@@ -1,13 +1,13 @@
-# In borrowings/views.py
-
 from django.utils import timezone
 from django.db import transaction
+from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import Borrowing
 from .serializers import BorrowingSerializer
+from service_payments.models import Payment
 
 
 class BorrowingViewSet(viewsets.ModelViewSet):
@@ -34,9 +34,27 @@ class BorrowingViewSet(viewsets.ModelViewSet):
                 book.inventory += 1
                 book.save()
 
-                # if borrowing.actual_return_date > borrowing.expected_return_date:
-                #    create_fine_payment(borrowing)
-                #    pass
+                if borrowing.actual_return_date > borrowing.expected_return_date:
+
+                    overdue_days = (
+                        borrowing.actual_return_date - borrowing.expected_return_date
+                    ).days
+
+                    try:
+                        fine_multiplier = settings.FINE_MULTIPLIER
+                    except AttributeError:
+                        fine_multiplier = 2
+
+                    money_to_pay = (
+                        overdue_days * borrowing.book.daily_fee * fine_multiplier
+                    )
+
+                    Payment.objects.create(
+                        borrowing=borrowing,
+                        status=Payment.StatusChoices.PENDING,
+                        type=Payment.TypeChoices.FINE,
+                        money_to_pay=money_to_pay,
+                    )
 
         except Exception as e:
             return Response(
