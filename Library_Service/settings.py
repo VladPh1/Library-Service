@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "service_borrowing",
     "service_payments",
     "drf_spectacular",
+    "django_q",
 ]
 
 MIDDLEWARE = [
@@ -178,3 +179,12 @@ else:
     print("WARNING: STRIPE_SECRET_KEY not found in .env file.")
 
 FINE_MULTIPLIER = 2
+
+Q_CLUSTER = {
+    'name': 'LibraryServiceCluster',
+    'workers': 4,
+    'timeout': 90,
+    'retry': 120,
+    'queue_limit': 50,
+    'bulk': 10,
+    'orm': 'default',
