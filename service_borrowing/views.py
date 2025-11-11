@@ -14,6 +14,7 @@ from rest_framework.exceptions import ValidationError
 from .models import Borrowing
 from .serializers import BorrowingSerializer
 from service_payments.models import Payment
+from notifications.tasks import send_notification_task
 
 
 class BorrowingViewSet(viewsets.ModelViewSet):
@@ -104,9 +105,7 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         borrowing = serializer.save(user=self.request.user)
 
         try:
-            days_to_rent = (
-                borrowing.expected_return_date - borrowing.borrow_date.date()
-            ).days
+            days_to_rent = (borrowing.expected_return_date - borrowing.borrow_date).days
             money_to_pay = borrowing.book.daily_fee * days_to_rent
 
             if money_to_pay <= 0:
@@ -150,6 +149,8 @@ class BorrowingViewSet(viewsets.ModelViewSet):
                 status=Payment.StatusChoices.PENDING,
                 type=Payment.TypeChoices.PAYMENT,
             )
+            message = f"📚 Create new borrowing!\nBook: {borrowing.book.title}\nUser: {borrowing.user.email}"
+            send_notification_task.delay(message)
 
         except Exception as e:
             borrowing.delete()
