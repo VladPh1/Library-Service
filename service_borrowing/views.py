@@ -3,6 +3,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.db import transaction
 from django.conf import settings
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -18,6 +20,31 @@ class BorrowingViewSet(viewsets.ModelViewSet):
     queryset = Borrowing.objects.all()
     serializer_class = BorrowingSerializer
     permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="user_id",
+                type=OpenApiTypes.INT,
+                description="Filter by user id (ex. ?user_id=1)",
+            ),
+            OpenApiParameter(
+                name="book_id",
+                type=OpenApiTypes.INT,
+                description="Filter by book id (ex. ?book_id=5)",
+            ),
+            OpenApiParameter(
+                name="is_active",
+                type=OpenApiTypes.BOOL,
+                description=(
+                    "Filter by active (book is bot active). " "ex. ?is_active=true"
+                ),
+            ),
+        ],
+        responses={200: BorrowingSerializer(many=True)},
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     @action(detail=True, methods=["post"], url_path="return")
     def return_borrowing(self, request, pk=None):
