@@ -8,6 +8,7 @@ import stripe
 
 from service_payments.models import Payment
 from service_payments.serializers import PaymentSerializer
+from notifications.tasks import send_notification_task
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
@@ -67,6 +68,9 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 payment = Payment.objects.get(session_id=session_id)
                 payment.status = Payment.StatusChoices.PAID
                 payment.save()
+
+                message = f"✅ Payment success!\nBorrow ID: {payment.borrowing.id}\nTotal: ${payment.money_to_pay}"
+                send_notification_task.delay(message)
 
                 return Response(
                     {"message": f"Payment {payment.id} successful!"},
