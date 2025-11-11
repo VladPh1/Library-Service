@@ -104,7 +104,9 @@ class BorrowingViewSet(viewsets.ModelViewSet):
         borrowing = serializer.save(user=self.request.user)
 
         try:
-            days_to_rent = (borrowing.expected_return_date - borrowing.borrow_date).days
+            days_to_rent = (
+                borrowing.expected_return_date - borrowing.borrow_date.date()
+            ).days
             money_to_pay = borrowing.book.daily_fee * days_to_rent
 
             if money_to_pay <= 0:

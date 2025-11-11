@@ -14,3 +14,9 @@ class BorrowingSerializer(serializers.ModelSerializer):
             "book",
             "user",
         )
+        read_only_fields = (
+            "id",
+            "borrow_date",
+            "actual_return_date",
+            "user",
+        )

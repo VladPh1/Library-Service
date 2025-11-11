@@ -1,14 +1,13 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from service_book.models import Book
 from user.models import User
 
 
 class Borrowing(models.Model):
-    borrow_date = models.DateField(
-        auto_now_add=True,
-    )
+    borrow_date = models.DateField(default=timezone.now)
     expected_return_date = models.DateField()
     actual_return_date = models.DateField(
         null=True,
