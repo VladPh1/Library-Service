@@ -14,6 +14,7 @@ from rest_framework.exceptions import ValidationError
 from .models import Borrowing
 from .serializers import BorrowingSerializer
 from service_payments.models import Payment
+from notifications.tasks import send_notification_task
 
 
 class BorrowingViewSet(viewsets.ModelViewSet):
@@ -150,6 +151,8 @@ class BorrowingViewSet(viewsets.ModelViewSet):
                 status=Payment.StatusChoices.PENDING,
                 type=Payment.TypeChoices.PAYMENT,
             )
+            message = f"📚 Create new borrowing!\nBook: {borrowing.book.title}\nUser: {borrowing.user.email}"
+            send_notification_task.delay(message)
 
         except Exception as e:
             borrowing.delete()
