@@ -50,7 +50,6 @@ INSTALLED_APPS = [
     "service_borrowing",
     "service_payments",
     "drf_spectacular",
-    "django_q",
 ]
 
 MIDDLEWARE = [
@@ -180,11 +179,9 @@ else:
 
 FINE_MULTIPLIER = 2
 
-Q_CLUSTER = {
-    'name': 'LibraryServiceCluster',
-    'workers': 4,
-    'timeout': 90,
-    'retry': 120,
-    'queue_limit': 50,
-    'bulk': 10,
-    'orm': 'default',
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Europe/Kiev"
