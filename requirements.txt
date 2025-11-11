@@ -22,3 +22,4 @@ pytokens==0.3.0
 sqlparse==0.5.3
 yarl==1.22.0
 stripe~=13.2.0
+python-dotenv~=1.2.1
