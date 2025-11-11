@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -11,6 +13,39 @@ from service_payments.serializers import PaymentSerializer
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="status",
+                type=OpenApiTypes.STR,
+                enum=Payment.StatusChoices.values,
+                description="Filter by payment status",
+            ),
+            OpenApiParameter(
+                name="type",
+                type=OpenApiTypes.STR,
+                enum=Payment.TypeChoices.values,
+                description="Filter by payment type",
+            ),
+            OpenApiParameter(
+                name="borrowing_id",
+                type=OpenApiTypes.INT,
+                description="Filter by borrowing id (ex. ?borrowing_id=3)",
+            ),
+            OpenApiParameter(
+                name="user_id",
+                type=OpenApiTypes.INT,
+                description=(
+                    "Filter by user id"
+                    "(ex. ?user_id=2). ( 'borrowing__user_id')"
+                ),
+            ),
+        ],
+        responses={200: PaymentSerializer(many=True)},
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
         user = self.request.user
