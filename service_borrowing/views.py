@@ -1,3 +1,5 @@
+import stripe
+from django.urls import reverse
 from django.utils import timezone
 from django.db import transaction
 from django.conf import settings
@@ -6,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from rest_framework.exceptions import ValidationError
 from .models import Borrowing
 from .serializers import BorrowingSerializer
 from service_payments.models import Payment
@@ -66,3 +69,59 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(borrowing)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def perform_create(self, serializer):
+
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        borrowing = serializer.save(user=self.request.user)
+
+        try:
+            days_to_rent = (borrowing.expected_return_date - borrowing.borrow_date).days
+            money_to_pay = borrowing.book.daily_fee * days_to_rent
+
+            if money_to_pay <= 0:
+                raise ValidationError("Incorrect price")
+
+        except Exception as e:
+            borrowing.delete()
+            raise ValidationError(f"Error calculating price: {e}")
+
+        success_url = (
+            self.request.build_absolute_uri(reverse("payment:payment-success"))
+            + "?session_id={CHECKOUT_SESSION_ID}"
+        )
+
+        cancel_url = self.request.build_absolute_uri(reverse("payment:payment-cancel"))
+
+        try:
+            session = stripe.checkout.Session.create(
+                line_items=[
+                    {
+                        "price_data": {
+                            "currency": "usd",
+                            "product_data": {
+                                "name": f"Rent book: {borrowing.book.title}",
+                            },
+                            "unit_amount": int(money_to_pay * 100),
+                        },
+                        "quantity": 1,
+                    }
+                ],
+                mode="payment",
+                success_url=success_url,
+                cancel_url=cancel_url,
+            )
+
+            Payment.objects.create(
+                borrowing=borrowing,
+                session_url=session.url,
+                session_id=session.id,
+                money_to_pay=money_to_pay,
+                status=Payment.StatusChoices.PENDING,
+                type=Payment.TypeChoices.PAYMENT,
+            )
+
+        except Exception as e:
+            borrowing.delete()
+            raise ValidationError(f"Stripe error: {str(e)}")
