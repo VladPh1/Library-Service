@@ -37,8 +37,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 name="user_id",
                 type=OpenApiTypes.INT,
                 description=(
-                    "Filter by user id"
-                    "(ex. ?user_id=2). ( 'borrowing__user_id')"
+                    "Filter by user id" "(ex. ?user_id=2). ( 'borrowing__user_id')"
                 ),
             ),
         ],
