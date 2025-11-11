@@ -7,7 +7,7 @@ from user.models import User
 
 
 class Borrowing(models.Model):
-    borrow_date = models.DateField(default=timezone.now)
+    borrow_date = models.DateField(auto_now_add=True)
     expected_return_date = models.DateField()
     actual_return_date = models.DateField(
         null=True,
