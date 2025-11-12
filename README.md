@@ -10,7 +10,8 @@ Python3 must be already installed
 
 ```shell
 
-Install Celery
+Install Celery, PosrgresSQL and create db
+
 
 git clone https://github.com/VladPh1/Library-Service
 cd library-service
@@ -20,6 +21,12 @@ pip install -r requirements.txt
 set STRIPE_SECRET_KEY = <your secret key>
 set TELEGRAM_BOT_TOKEN = <your telegram bot token>
 set TELEGRAM_CHAT_ID = <your telegram chat id>
+set DB_HOST = <your db hostname>
+set DB_NAME = <your db name>
+set DB_USER = <your db username>
+set DB_PASSWORD = <your db user password>
+set SECRET_KEY = <your secret key>
+python manage.py migrate
 
 python manage.py runserver # starts Django server
 ```
