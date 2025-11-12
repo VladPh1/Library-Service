@@ -12,9 +12,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from datetime import timedelta
+from decouple import config
 from pathlib import Path
 from dotenv import load_dotenv
 from celery.schedules import crontab
+from environ import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,12 +28,14 @@ load_dotenv(dotenv_path)
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-%kp#63=6_xm4w-jwsnh3f*1&ko9af4_&oxfgwgm#h(2*^aa_q_"
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+env = environ.Env(DEBUG=(bool, False))
 
-ALLOWED_HOSTS = []
+DEBUG = env("DEBUG")
+
+ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1", "localhost", "*"]
 
 
 # Application definition
